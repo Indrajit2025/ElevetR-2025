@@ -1,19 +1,29 @@
-# 🚀 ElevatR: BPUT Smart Placement Portal
+# 🚀 ElevatR: Intelligent Campus Placement Ecosystem
+### Biju Patnaik University of Technology (BPUT) Specialized Recruitment Portal
 
-**ElevatR** is an intelligent, AI-powered placement management system designed specifically for the **BPUT** (Biju Patnaik University of Technology) ecosystem. It bridges the gap between students, recruiters, and academic administrators through automated workflows and career intelligence.
+<p align="center">
+  <img src="static/favicon.svg" width="120" alt="ElevatR Logo" />
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/AI-Google_Gemini-blue?style=for-the-badge&logo=google-gemini" />
+  <img src="https://img.shields.io/badge/Backend-Flask-black?style=for-the-badge&logo=flask" />
+  <img src="https://img.shields.io/badge/Database-MySQL-4479A1?style=for-the-badge&logo=mysql" />
+  <img src="https://img.shields.io/badge/ML-Scikit--learn-F7931E?style=for-the-badge&logo=scikit-learn" />
+</p>
 
 ---
 
-## 🗺️ System Architecture
+## 📖 Executive Overview
+**ElevatR** is a comprehensive, AI-driven placement management system built to modernize recruitment for **BPUT** colleges. It replaces legacy processes with a unified platform that connects students, recruiters, and university administration through automated workflows and intelligent matching.
 
+## 🏗️ System Architecture
+```mermaid
 graph TD
-    A[Student Profile] -->|ML Processing| B(AI Recommendation Engine)
-    B -->|TF-IDF + Cosine Similarity| C{Job Matching}
-    C -->|Fits| D[Student Dash: Top Jobs]
-    C -->|Gaps| E[AI Roadmap: Learning Links]
-    
-    F[Company] -->|MCA Verification| G(University Admin)
-    G -->|Approved| H[Job Posting Enabled]
-    
-    I[Gemini AI Chatbot] <-->|Career Help| A
-    H -->|Video Interview| J[Whereby Integration]
+    A[Student] -->|Uploads Certificate| B(Gemini AI Skill Extractor)
+    B -->|Populates| C[(MySQL DB)]
+    D[Company] -->|Posts Job| E(ML Recommendation Engine)
+    C --> E
+    E -->|Calculates Fit Score| A
+    D -->|Accepted Applicant| F[Whereby Video Interview]
+    G[University Admin] -->|Verifies| D
