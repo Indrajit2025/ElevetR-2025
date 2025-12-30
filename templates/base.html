@@ -1,0 +1,1116 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}ElevatR - BPUT Placement Portal{% endblock %}</title>
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display.swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/simplebar@5.3.4/dist/simplebar.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/micromodal@0.4.6/dist/micromodal.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/kursor@0.1.6/dist/kursor.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <script type="importmap">
+      { "imports": { "@google/generative-ai": "https://esm.run/@google/generative-ai" } }
+    </script>
+
+    {% block head_extra %}{% endblock %}
+<style>
+  :root{
+    --sb-w: 280px;
+    --sb-cw: 60px;
+    --bg-grad: linear-gradient(180deg,#0b1324 0%,#0e1a35 100%);
+    --c-item:#d6def7; --c-item-active:#fff; --c-muted:#8ea1c9; --c-accent:#6ca9ff;
+    --ring: rgba(108,169,255,.35);
+  }
+
+  body.has-sidebar .content-wrap{ margin-left: var(--sb-w); transition: margin-left 260ms cubic-bezier(.2,.8,.2,1); }
+  body.has-sidebar.is-collapsed .content-wrap{ margin-left: var(--sb-cw); }
+  @media (max-width:1024px){ body.has-sidebar .content-wrap{ margin-left:0 !important; } }
+
+  .elevatr-sidebar{
+    position:fixed; inset:0 auto 0 0; width:var(--sb-w); background:var(--bg-grad);
+    color:var(--c-item); border-right:1px solid rgba(255,255,255,.06);
+    box-shadow:0 10px 30px rgba(0,0,0,.35); z-index:1040; overflow:hidden;
+    display:flex; flex-direction:column; transition: width 260ms cubic-bezier(.2,.8,.2,1), transform 240ms cubic-bezier(.2,.8,.2,1);
+  }
+  .elevatr-sidebar.collapsed{ width:var(--sb-cw); }
+
+  @media (max-width:1024px){
+    .elevatr-sidebar{ transform:translateX(-110%); }
+    .elevatr-sidebar.open{ transform:translateX(0); }
+  }
+
+  .sb-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:14px 12px; border-bottom:1px solid rgba(255,255,255,.06); min-height:60px; }
+  .elevatr-sidebar.collapsed .sb-head { justify-content: center; }
+
+  .sb-brand{ 
+    display:flex; align-items:center; gap:10px; 
+    opacity: 1; width: auto; overflow: hidden;
+    transition: opacity 200ms ease, width 200ms ease, gap 200ms ease;
+  }
+  .sb-logo{ width:32px; height:32px; border-radius:9px; background:radial-gradient(120% 120% at 0% 0%,#79a8ff 0%,#6ac0ff 35%,transparent 70%), #0d1a33; box-shadow:inset 0 0 0 1px rgba(255,255,255,.08), 0 6px 16px rgba(108,169,255,.25); }
+  .sb-title{ font-weight:700; color:var(--c-item-active); white-space:nowrap; transition: opacity 160ms ease,width 160ms ease; }
+  .elevatr-sidebar.collapsed .sb-brand { opacity: 0; width: 0; overflow: hidden; gap: 0; }
+
+  .sb-toggle{ 
+    width:32px; height:32px; display:inline-flex; align-items:center; justify-content:center; 
+    border-radius:8px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.08); 
+    color:var(--c-item); cursor:pointer; margin-right: 10px;
+    transition: background 200ms ease, color 200ms ease, transform 200ms ease, width 200ms ease;
+  }
+  .sb-toggle:hover{ background:rgba(255,255,255,.12); color:var(--c-item-active); transform: rotate(90deg) scale(1.1); }
+  .sb-toggle svg { transition: transform 200ms ease; }
+  .elevatr-sidebar.collapsed .sb-toggle { width: 48px; }
+  .elevatr-sidebar.collapsed .sb-toggle svg { transform: rotate(180deg); }
+
+  .sb-scroll{ flex:1; overflow:auto; padding:12px 6px 16px; }
+  .elevatr-sidebar.collapsed .sb-scroll{ padding:12px 4px 16px; }
+
+  .sb-group{ margin:0 0 18px; border-radius:10px; background:rgba(255,255,255,.02); border:1px solid rgba(255,255,255,.04); }
+  .elevatr-sidebar.collapsed .sb-group{ background:transparent; border:none; margin:0 0 20px; }
+
+  .sb-group-head{ 
+    display:flex; 
+    align-items:center; 
+    gap:8px; 
+    padding:10px 12px; 
+    font-size:11px; 
+    letter-spacing:.7px; 
+    text-transform:uppercase; 
+    color:var(--c-muted); 
+    border-bottom:1px solid rgba(255,255,255,.04); 
+  }
+  .elevatr-sidebar.collapsed .sb-group-head{ 
+    justify-content:center; 
+    align-items: center;
+    padding:12px 0; 
+    border:none; 
+    font-size:0; 
+    line-height:0; 
+    gap: 0;
+  }
+  .dot{ 
+    width:6px; 
+    height:6px; 
+    margin-left: 3px;
+    border-radius:999px; 
+    background:var(--c-accent); 
+    box-shadow:0 0 0 2px var(--ring); 
+    flex-shrink: 0;
+  }
+
+  .sb-list{ display:flex; flex-direction:column; gap:4px; padding:6px; }
+  .elevatr-sidebar.collapsed .sb-list{ padding:0; gap:6px; }
+
+  .sb-item{ 
+    position:relative; display:flex; align-items:center; gap:10px; 
+    padding:10px 12px; border-radius:8px; color:var(--c-item); 
+    text-decoration:none; background:transparent; font-size:13px; 
+    transition: background 150ms ease,color 150ms ease; 
+    cursor:pointer; border:none; width:100%; text-align:left; 
+  }
+  .sb-item:hover{ background:rgba(255,255,255,.06); color:var(--c-item-active); }
+  .elevatr-sidebar.collapsed .sb-item{ 
+    justify-content:center; align-items:center; gap:0; padding:0; 
+    margin:0 4px; min-height:48px; width:calc(100% - 8px);
+  }
+  
+  .icon{ width:18px; height:18px; flex-shrink:0; opacity:.9; display:block; }
+  .elevatr-sidebar.collapsed .icon{ width:24px; height:24px; }
+
+  .label{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; transition: opacity 140ms ease,width 140ms ease; }
+  .elevatr-sidebar.collapsed .label{ opacity:0; width:0; pointer-events:none; position:absolute; }
+
+  .chev{ margin-left:auto; width:14px; height:14px; opacity:.65; transition: transform 180ms ease; }
+  .sb-item[aria-expanded="true"] .chev{ transform:rotate(90deg); }
+  .elevatr-sidebar.collapsed .chev{ display:none; }
+
+  .submenu{ overflow:hidden; max-height:0; transition:max-height 220ms ease; padding-left:6px; }
+  .submenu.open{ max-height:360px; }
+  .elevatr-sidebar.collapsed .submenu{ display:none !important; }
+
+  .submenu a{ display:flex; align-items:center; gap:8px; padding:8px 12px; margin:2px 0; border-radius:6px; color:var(--c-item); font-size:12px; text-decoration:none; transition: background 150ms ease, color 150ms ease, transform 150ms ease; }
+  .submenu a:hover{ background:rgba(255,255,255,.04); color:var(--c-item-active); transform:translateX(2px); }
+
+  .sb-item.is-active{ background:rgba(108,169,255,.10); color:var(--c-item-active); }
+  .sb-item.is-active::before{ content:""; position:absolute; left:0; top:8px; bottom:8px; width:3px; border-radius:0 2px 2px 0; background:var(--c-accent); }
+  .elevatr-sidebar.collapsed .sb-item.is-active{ background:rgba(108,169,255,.14); }
+  .elevatr-sidebar.collapsed .sb-item.is-active::before{ display:none; }
+  .elevatr-sidebar.collapsed .sb-item.is-active::after{ content:""; position:absolute; left:50%; bottom:4px; transform:translateX(-50%); width:20px; height:2px; border-radius:1px; background:var(--c-accent); }
+
+  .sb-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.4); opacity:0; pointer-events:none; transition:opacity 200ms ease; z-index:1035; }
+  .sb-backdrop.show{ opacity:1; pointer-events:auto; }
+
+  .wow-seed{ opacity:0; transform:translateY(6px); }
+  .wow-in{ opacity:1; transform:translateY(0); transition:opacity 320ms ease, transform 320ms cubic-bezier(.2,.8,.2,1); }
+
+  .sb-fab{ position:fixed; left:16px; bottom:20px; z-index:1036; display:none; width:50px; height:50px; border-radius:14px; background:#0f1b36; color:#fff; border:1px solid rgba(255,255,255,.12); box-shadow:0 8px 24px rgba(0,0,0,.35); align-items:center; justify-content:center; cursor:pointer; transition: background 200ms ease, transform 200ms ease; }
+  .sb-fab.show{ display:inline-flex; }
+  .sb-fab:hover{ background:#132554; transform: scale(1.05) rotate(90deg); }
+
+  /* Notification Styles */
+  .notification-container {
+      position: relative;
+      display: inline-block;
+      margin-left: 20px;
+  }
+
+  #notification-bell {
+      cursor: pointer;
+      position: relative;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background-color 0.3s;
+      color: white;
+  }
+
+  #notification-bell:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  #notification-badge {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      background-color: #e74c3c;
+      color: white;
+      border-radius: 10px;
+      padding: 2px 6px;
+      font-size: 11px;
+      font-weight: bold;
+      display: none;
+  }
+
+  .notification-dropdown {
+      position: absolute;
+      right: 0;
+      top: 45px;
+      background-color: white;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      width: 350px;
+      max-height: 400px;
+      overflow-y: auto;
+      z-index: 1000;
+      display: none;
+  }
+
+  .notification-dropdown.show {
+      display: block;
+  }
+
+  .notification-item {
+      padding: 12px 16px;
+      border-bottom: 1px solid #f0f0f0;
+      cursor: pointer;
+      transition: background-color 0.2s;
+  }
+
+  .notification-item:hover {
+      background-color: #f8f9fa;
+  }
+
+  .notification-item:last-child {
+      border-bottom: none;
+  }
+
+  .notification-item.no-notifications {
+      text-align: center;
+      color: #999;
+      cursor: default;
+  }
+
+  .notification-item.no-notifications:hover {
+      background-color: white;
+  }
+
+  .notif-content strong {
+      display: block;
+      color: #333;
+      font-size: 14px;
+      margin-bottom: 4px;
+  }
+
+  .notif-content p {
+      color: #666;
+      font-size: 13px;
+      margin: 4px 0;
+      line-height: 1.4;
+  }
+
+  .notif-content small {
+      color: #999;
+      font-size: 11px;
+  }
+
+  .notification-item.clear-all {
+      text-align: center;
+      background-color: #f8f9fa;
+      cursor: default;
+      padding: 8px;
+  }
+
+  .notification-item.clear-all:hover {
+      background-color: #f8f9fa;
+  }
+
+  .notification-item.clear-all button {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      padding: 6px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+  }
+
+  .notification-item.clear-all button:hover {
+      background-color: #2980b9;
+  }
+
+  /* Mobile Menu Styles */
+  .mobile-menu {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 85%;
+    max-width: 380px;
+    height: 100vh;
+    background: linear-gradient(135deg, rgba(11, 19, 36, 0.98), rgba(14, 26, 53, 0.98));
+    backdrop-filter: blur(20px);
+    transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 10000;
+    overflow-y: auto;
+    box-shadow: -10px 0 40px rgba(0, 0, 0, 0.5);
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .mobile-menu.active {
+    right: 0;
+  }
+
+  .mobile-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    z-index: 9999;
+  }
+
+  .mobile-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .hamburger {
+    width: 26px;
+    height: 20px;
+    position: relative;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 3px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    transition: all 0.3s ease;
+  }
+
+  .hamburger:hover {
+    background: rgba(108, 169, 255, 0.2);
+    border-color: rgba(108, 169, 255, 0.4);
+    transform: scale(1.05);
+  }
+
+  .hamburger span {
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, #6ca9ff, #8ec5ff);
+    border-radius: 2px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: center;
+    box-shadow: 0 0 6px rgba(108, 169, 255, 0.3);
+  }
+
+  .hamburger.active {
+    background: rgba(108, 169, 255, 0.15);
+    border-color: rgba(108, 169, 255, 0.5);
+  }
+
+  .hamburger.active span {
+    background: linear-gradient(90deg, #ff6b6b, #ff8e8e);
+    box-shadow: 0 0 8px rgba(255, 107, 107, 0.4);
+  }
+
+  .hamburger.active span:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+  }
+
+  .hamburger.active span:nth-child(2) {
+    opacity: 0;
+    transform: translateX(-15px);
+  }
+
+  .hamburger.active span:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+
+  .mobile-menu-item {
+    opacity: 0;
+    transform: translateX(20px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .mobile-menu.active .mobile-menu-item {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .mobile-menu.active .mobile-menu-item:nth-child(1) { transition-delay: 0.1s; }
+  .mobile-menu.active .mobile-menu-item:nth-child(2) { transition-delay: 0.15s; }
+  .mobile-menu.active .mobile-menu-item:nth-child(3) { transition-delay: 0.2s; }
+  .mobile-menu.active .mobile-menu-item:nth-child(4) { transition-delay: 0.25s; }
+  .mobile-menu.active .mobile-menu-item:nth-child(5) { transition-delay: 0.3s; }
+  .mobile-menu.active .mobile-menu-item:nth-child(6) { transition-delay: 0.35s; }
+  .mobile-menu.active .mobile-menu-item:nth-child(7) { transition-delay: 0.4s; }
+  .mobile-menu.active .mobile-menu-item:nth-child(8) { transition-delay: 0.45s; }
+  .mobile-menu.active .mobile-menu-item:nth-child(9) { transition-delay: 0.5s; }
+  .mobile-menu.active .mobile-menu-item:nth-child(10) { transition-delay: 0.55s; }
+
+
+  .mobile-dropdown-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .mobile-dropdown-content.active {
+    max-height: 300px;
+  }
+
+  .mobile-menu::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .mobile-menu::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .mobile-menu::-webkit-scrollbar-thumb {
+    background: rgba(108, 169, 255, 0.5);
+    border-radius: 3px;
+  }
+
+  @media (min-width: 768px) {
+    .hamburger-wrapper {
+      display: none !important;
+    }
+    .mobile-menu, .mobile-overlay {
+      display: none !important;
+    }
+  }
+</style>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js"></script>
+</head>
+
+<body class="overflow-x-hidden text-[#f9fafc]" style="font-family: 'Poppins', sans-serif; background-color: #07192f;">
+    <div id="vanta-bg" class="fixed inset-0 w-full h-full"></div>
+
+    <div class="relative z-10">
+        <nav class="navbar fixed top-5 left-1/2 -translate-x-1/2 w-11/12 max-w-5xl bg-black/30 backdrop-filter backdrop-blur-xl z-50 shadow-2xl rounded-full border border-white/10 hover:border-indigo-500/30 transition-all duration-300">
+            <div class="container mx-auto px-6 md:px-8 py-3 flex justify-between items-center">
+                <div class="flex items-center gap-4">
+                    <a href="{{ url_for('landing') }}" class="flex items-center gap-2 group">
+                        <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-cyan-500 rounded-full flex items-center justify-center transform group-hover:scale-110 group-hover:rotate-12 transition-all duration-300 shadow-lg shadow-indigo-500/50">
+                            <span class="text-white font-black text-lg">E</span>
+                        </div>
+                        <span class="text-xl md:text-2xl font-bold text-white bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">ElevetR</span>
+                    </a>
+                </div>
+
+                <div class="hidden md:flex gap-x-8 items-center">
+                    {% if session.logged_in %}
+                        {% if session.role == 'student' %}
+                            <a href="{{ url_for('landing') }}" class="nav-link text-gray-300 hover:text-white relative group px-2 py-1"><span class="relative z-10">Home</span><span class="absolute inset-0 bg-gradient-to-r from-indigo-600 to-cyan-600 rounded-lg opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span></a>
+                            <a href="{{ url_for('student_profile') }}" class="nav-link text-gray-300 hover:text-white relative group px-2 py-1"><span class="relative z-10">Profile</span><span class="absolute inset-0 bg-gradient-to-r from-indigo-600 to-cyan-600 rounded-lg opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span></a>
+                            <a href="{{ url_for('all_internship_opportunity') }}" class="nav-link text-gray-300 hover:text-white relative group px-2 py-1"><span class="relative z-10">Internships</span><span class="absolute inset-0 bg-gradient-to-r from-indigo-600 to-cyan-600 rounded-lg opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span></a>
+                            <a href="{{ url_for('my_applications') }}" class="nav-link text-gray-300 hover:text-white relative group px-2 py-1"><span class="relative z-10">My Applications</span><span class="absolute inset-0 bg-gradient-to-r from-indigo-600 to-cyan-600 rounded-lg opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span></a>
+                            <a href="{{ url_for('resources') }}" class="nav-link text-gray-300 hover:text-white relative group px-2 py-1"><span class="relative z-10">Resources</span><span class="absolute inset-0 bg-gradient-to-r from-indigo-600 to-cyan-600 rounded-lg opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span></a>
+                            
+                            <div class="notification-container">
+                                <div id="notification-bell" onclick="toggleNotificationDropdown()">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                                    </svg>
+                                    <span id="notification-badge" class="badge">0</span>
+                                </div>
+                                <div id="notification-dropdown" class="notification-dropdown">
+                                    <div class="notification-item no-notifications">
+                                        <p>No new notifications</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <a href="{{ url_for('logout') }}" class="text-white bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 px-5 py-2 rounded-full text-sm font-semibold transform hover:scale-105 transition-all duration-300 shadow-lg shadow-red-500/30">Logout</a>
+                        {% elif session.role == 'company' %}
+                            <a href="{{ url_for('landing') }}" class="nav-link text-gray-300 hover:text-white relative group px-2 py-1"><span class="relative z-10">Home</span><span class="absolute inset-0 bg-gradient-to-r from-indigo-600 to-cyan-600 rounded-lg opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span></a>
+                            <a href="{{ url_for('company_profile') }}" class="nav-link text-gray-300 hover:text-white relative group px-2 py-1"><span class="relative z-10">Dashboard</span><span class="absolute inset-0 bg-gradient-to-r from-indigo-600 to-cyan-600 rounded-lg opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span></a>
+                            <a href="{{ url_for('post_job') }}" class="nav-link text-gray-300 hover:text-white relative group px-2 py-1"><span class="relative z-10">Post Job</span><span class="absolute inset-0 bg-gradient-to-r from-indigo-600 to-cyan-600 rounded-lg opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span></a>
+                            
+                            <div class="notification-container">
+                                <div id="notification-bell" onclick="toggleNotificationDropdown()">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                                    </svg>
+                                    <span id="notification-badge" class="badge">0</span>
+                                </div>
+                                <div id="notification-dropdown" class="notification-dropdown">
+                                    <div class="notification-item no-notifications">
+                                        <p>No new notifications</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <a href="{{ url_for('logout') }}" class="text-white bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 px-5 py-2 rounded-full text-sm font-semibold transform hover:scale-105 transition-all duration-300 shadow-lg shadow-red-500/30">Logout</a>
+                        {% elif session.role == 'university' %}
+                            <a href="{{ url_for('landing') }}" class="nav-link text-gray-300 hover:text-white relative group px-2 py-1"><span class="relative z-10">Home</span><span class="absolute inset-0 bg-gradient-to-r from-indigo-600 to-cyan-600 rounded-lg opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span></a>
+                            <a href="{{ url_for('university_dashboard') }}" class="nav-link text-gray-300 hover:text-white relative group px-2 py-1"><span class="relative z-10">Dashboard</span><span class="absolute inset-0 bg-gradient-to-r from-indigo-600 to-cyan-600 rounded-lg opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span></a>
+                            
+                            <div class="notification-container">
+                                <div id="notification-bell" onclick="toggleNotificationDropdown()">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                                    </svg>
+                                    <span id="notification-badge" class="badge">0</span>
+                                </div>
+                                <div id="notification-dropdown" class="notification-dropdown">
+                                    <div class="notification-item no-notifications">
+                                        <p>No new notifications</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <a href="{{ url_for('logout') }}" class="text-white bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 px-5 py-2 rounded-full text-sm font-semibold transform hover:scale-105 transition-all duration-300 shadow-lg shadow-red-500/30">Logout</a>
+                        {% elif session.role == 'college' %}
+                            <a href="{{ url_for('landing') }}" class="nav-link text-gray-300 hover:text-white relative group px-2 py-1"><span class="relative z-10">Home</span><span class="absolute inset-0 bg-gradient-to-r from-indigo-600 to-cyan-600 rounded-lg opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span></a>
+                            <a href="{{ url_for('college_dashboard') }}" class="nav-link text-gray-300 hover:text-white relative group px-2 py-1"><span class="relative z-10">Dashboard</span><span class="absolute inset-0 bg-gradient-to-r from-indigo-600 to-cyan-600 rounded-lg opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span></a>
+                            <a href="{{ url_for('logout') }}" class="text-white bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 px-5 py-2 rounded-full text-sm font-semibold transform hover:scale-105 transition-all duration-300 shadow-lg shadow-red-500/30">Logout</a>
+                        {% endif %}
+                    {% else %}
+                        <a href="{{ url_for('landing') }}#home" class="nav-link text-gray-300 hover:text-white relative group px-2 py-1"><span class="relative z-10">Home</span><span class="absolute inset-0 bg-gradient-to-r from-indigo-600 to-cyan-600 rounded-lg opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span></a>
+                        <a href="{{ url_for('landing') }}#about" class="nav-link text-gray-300 hover:text-white relative group px-2 py-1"><span class="relative z-10">About</span><span class="absolute inset-0 bg-gradient-to-r from-indigo-600 to-cyan-600 rounded-lg opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span></a>
+                        <a href="{{ url_for('landing') }}#features" class="nav-link text-gray-300 hover:text-white relative group px-2 py-1"><span class="relative z-10">Features</span><span class="absolute inset-0 bg-gradient-to-r from-indigo-600 to-cyan-600 rounded-lg opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span></a>
+                        <a href="{{ url_for('landing') }}#testimonials" class="nav-link text-gray-300 hover:text-white relative group px-2 py-1"><span class="relative z-10">Reviews</span><span class="absolute inset-0 bg-gradient-to-r from-indigo-600 to-cyan-600 rounded-lg opacity-0 group-hover:opacity-20 transition-opacity duration-300"></span></a>
+
+                        <div class="relative dropdown-wrapper">
+                            <button class="text-gray-300 hover:text-white flex items-center gap-1 px-4 py-2 rounded-full bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-600/40 hover:to-cyan-600/40 border border-indigo-500/30 hover:border-indigo-500/50 transition-all duration-300 font-semibold dropdown-trigger transform hover:scale-105">
+                                <i class="material-icons text-base">login</i> Login <i class="material-icons text-sm">arrow_drop_down</i>
+                            </button>
+                            <div class="hidden absolute top-full mt-2 right-0 dropdown-content">
+                                <a href="{{ url_for('student_login') }}" class="value">Student</a>
+                                <a href="{{ url_for('company_login') }}" class="value">Company</a>
+                                <a href="{{ url_for('college_login') }}" class="value">College</a>
+                                <a href="{{ url_for('university_login') }}" class="value">University</a>
+                            </div>
+                        </div>
+
+                        <div class="relative dropdown-wrapper">
+                            <button class="text-white flex items-center gap-1 px-4 py-2 rounded-full bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-700 hover:to-cyan-700 transition-all duration-300 font-semibold dropdown-trigger transform hover:scale-105 shadow-lg shadow-indigo-500/30">
+                                <i class="material-icons text-base">person_add</i> Register <i class="material-icons text-sm">arrow_drop_down</i>
+                            </button>
+                            <div class="hidden absolute top-full mt-2 right-0 dropdown-content">
+                                <a href="{{ url_for('student_register') }}" class="value">Student</a>
+                                <a href="{{ url_for('company_register') }}" class="value">Company</a>
+                                <a href="{{ url_for('college_register') }}" class="value">College</a>
+                                
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="md:hidden hamburger-wrapper">
+                    <button id="mobileMenuBtn" class="text-white focus:outline-none p-2" aria-label="Toggle menu">
+                        <div class="hamburger">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <div id="mobileOverlay" class="mobile-overlay"></div>
+
+        <div id="mobileMenu" class="mobile-menu">
+            <div class="p-6">
+                <div class="flex items-center gap-3 mb-8 pb-6 border-b border-white/10">
+                    <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-cyan-500 rounded-full flex items-center justify-center shadow-lg shadow-indigo-500/50">
+                        <span class="text-white font-black text-xl">E</span>
+                    </div>
+                    <span class="text-2xl font-bold text-white">ElevetR</span>
+                </div>
+
+                <div class="space-y-2">
+                    {% if session.logged_in %}
+                        {% if session.role == 'student' %}
+                            <a href="{{ url_for('landing') }}" class="mobile-menu-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-300 group">
+                                <i class="material-icons text-indigo-400 group-hover:scale-110 transition-transform">home</i>
+                                <span class="font-medium">Home</span>
+                            </a>
+                            <a href="{{ url_for('student_profile') }}" class="mobile-menu-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-300 group">
+                                <i class="material-icons text-cyan-400 group-hover:scale-110 transition-transform">person</i>
+                                <span class="font-medium">Profile</span>
+                            </a>
+                            <a href="{{ url_for('all_internship_opportunity') }}" class="mobile-menu-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-300 group">
+                                <i class="material-icons text-purple-400 group-hover:scale-110 transition-transform">work</i>
+                                <span class="font-medium">Internships</span>
+                            </a>
+                            <a href="{{ url_for('my_applications') }}" class="mobile-menu-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-300 group">
+                                <i class="material-icons text-pink-400 group-hover:scale-110 transition-transform">description</i>
+                                <span class="font-medium">My Applications</span>
+                            </a>
+                            <a href="{{ url_for('resources') }}" class="mobile-menu-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-300 group">
+                                <i class="material-icons text-green-400 group-hover:scale-110 transition-transform">library_books</i>
+                                <span class="font-medium">Resources</span>
+                            </a>
+                            <a href="{{ url_for('tech_feed') }}" class="mobile-menu-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-300 group">
+                                <i class="material-icons text-orange-400 group-hover:scale-110 transition-transform">rss_feed</i>
+                                <span class="font-medium">Tech Feed</span>
+                            </a>
+                            <a href="{{ url_for('chatbot_page') }}" class="mobile-menu-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-300 group">
+                                <i class="material-icons text-teal-400 group-hover:scale-110 transition-transform">smart_toy</i>
+                                <span class="font-medium">Chatbot</span>
+                            </a>
+                            <a href="{{ url_for('logout') }}" class="mobile-menu-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-red-500/20 transition-all duration-300 group">
+                                <i class="material-icons text-red-400 group-hover:scale-110 transition-transform">logout</i>
+                                <span class="font-medium">Logout</span>
+                            </a>
+                        {% elif session.role == 'company' %}
+                            <a href="{{ url_for('landing') }}" class="mobile-menu-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-300 group">
+                                <i class="material-icons text-indigo-400 group-hover:scale-110 transition-transform">home</i>
+                                <span class="font-medium">Home</span>
+                            </a>
+                            <a href="{{ url_for('company_profile') }}" class="mobile-menu-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-300 group">
+                                <i class="material-icons text-cyan-400 group-hover:scale-110 transition-transform">dashboard</i>
+                                <span class="font-medium">Dashboard</span>
+                            </a>
+                            <a href="{{ url_for('post_job') }}" class="mobile-menu-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-300 group">
+                                <i class="material-icons text-purple-400 group-hover:scale-110 transition-transform">add_circle</i>
+                                <span class="font-medium">Post Job</span>
+                            </a>
+                            <a href="{{ url_for('tech_feed') }}" class="mobile-menu-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-300 group">
+                                <i class="material-icons text-orange-400 group-hover:scale-110 transition-transform">rss_feed</i>
+                                <span class="font-medium">Tech Feed</span>
+                            </a>
+                            <a href="{{ url_for('chatbot_page') }}" class="mobile-menu-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-300 group">
+                                <i class="material-icons text-teal-400 group-hover:scale-110 transition-transform">smart_toy</i>
+                                <span class="font-medium">Chatbot</span>
+                            </a>
+                            <a href="{{ url_for('logout') }}" class="mobile-menu-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-red-500/20 transition-all duration-300 group">
+                                <i class="material-icons text-red-400 group-hover:scale-110 transition-transform">logout</i>
+                                <span class="font-medium">Logout</span>
+                            </a>
+                        {% elif session.role == 'university' %}
+                            <a href="{{ url_for('landing') }}" class="mobile-menu-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-300 group">
+                                <i class="material-icons text-indigo-400 group-hover:scale-110 transition-transform">home</i>
+                                <span class="font-medium">Home</span>
+                            </a>
+                            <a href="{{ url_for('university_dashboard') }}" class="mobile-menu-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-300 group">
+                                <i class="material-icons text-cyan-400 group-hover:scale-110 transition-transform">dashboard</i>
+                                <span class="font-medium">Dashboard</span>
+                            </a>
+                            <a href="{{ url_for('tech_feed') }}" class="mobile-menu-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-300 group">
+                                <i class="material-icons text-orange-400 group-hover:scale-110 transition-transform">rss_feed</i>
+                                <span class="font-medium">Tech Feed</span>
+                            </a>
+                            <a href="{{ url_for('chatbot_page') }}" class="mobile-menu-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-300 group">
+                                <i class="material-icons text-teal-400 group-hover:scale-110 transition-transform">smart_toy</i>
+                                <span class="font-medium">Chatbot</span>
+                            </a>
+                            <a href="{{ url_for('logout') }}" class="mobile-menu-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-red-500/20 transition-all duration-300 group">
+                                <i class="material-icons text-red-400 group-hover:scale-110 transition-transform">logout</i>
+                                <span class="font-medium">Logout</span>
+                            </a>
+                        {% elif session.role == 'college' %}
+                            <a href="{{ url_for('landing') }}" class="mobile-menu-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-300 group">
+                                <i class="material-icons text-indigo-400 group-hover:scale-110 transition-transform">home</i>
+                                <span class="font-medium">Home</span>
+                            </a>
+                            <a href="{{ url_for('college_dashboard') }}" class="mobile-menu-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-300 group">
+                                <i class="material-icons text-cyan-400 group-hover:scale-110 transition-transform">dashboard</i>
+                                <span class="font-medium">Dashboard</span>
+                            </a>
+                            <a href="{{ url_for('tech_feed') }}" class="mobile-menu-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-300 group">
+                                <i class="material-icons text-orange-400 group-hover:scale-110 transition-transform">rss_feed</i>
+                                <span class="font-medium">Tech Feed</span>
+                            </a>
+                            <a href="{{ url_for('chatbot_page') }}" class="mobile-menu-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-300 group">
+                                <i class="material-icons text-teal-400 group-hover:scale-110 transition-transform">smart_toy</i>
+                                <span class="font-medium">Chatbot</span>
+                            </a>
+                            <a href="{{ url_for('logout') }}" class="mobile-menu-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-red-500/20 transition-all duration-300 group">
+                                <i class="material-icons text-red-400 group-hover:scale-110 transition-transform">logout</i>
+                                <span class="font-medium">Logout</span>
+                            </a>
+                        {% endif %}
+                    {% else %}
+                        <a href="{{ url_for('landing') }}#home" class="mobile-menu-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-300 group">
+                            <i class="material-icons text-indigo-400 group-hover:scale-110 transition-transform">home</i>
+                            <span class="font-medium">Home</span>
+                        </a>
+                        <a href="{{ url_for('landing') }}#about" class="mobile-menu-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-300 group">
+                            <i class="material-icons text-cyan-400 group-hover:scale-110 transition-transform">info</i>
+                            <span class="font-medium">About</span>
+                        </a>
+                        <a href="{{ url_for('landing') }}#features" class="mobile-menu-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-300 group">
+                            <i class="material-icons text-purple-400 group-hover:scale-110 transition-transform">star</i>
+                            <span class="font-medium">Features</span>
+                        </a>
+                        <a href="{{ url_for('landing') }}#testimonials" class="mobile-menu-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-300 group">
+                            <i class="material-icons text-pink-400 group-hover:scale-110 transition-transform">rate_review</i>
+                            <span class="font-medium">Reviews</span>
+                        </a>
+
+                        <div class="mobile-menu-item">
+                            <button class="mobile-dropdown-trigger w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-300 group">
+                                <div class="flex items-center gap-3">
+                                    <i class="material-icons text-indigo-400 group-hover:scale-110 transition-transform">login</i>
+                                    <span class="font-medium">Login</span>
+                                </div>
+                                <i class="material-icons transform transition-transform duration-300 dropdown-arrow">expand_more</i>
+                            </button>
+                            <div class="mobile-dropdown-content pl-12 mt-1 space-y-1">
+                                <a href="{{ url_for('student_login') }}" class="block px-4 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all duration-200">Student</a>
+                                <a href="{{ url_for('company_login') }}" class="block px-4 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all duration-200">Company</a>
+                                <a href="{{ url_for('college_login') }}" class="block px-4 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all duration-200">College</a>
+                                <a href="{{ url_for('university_login') }}" class="block px-4 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all duration-200">University</a>
+                            </div>
+                        </div>
+
+                        <div class="mobile-menu-item">
+                            <button class="mobile-dropdown-trigger w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-300 group">
+                                <div class="flex items-center gap-3">
+                                    <i class="material-icons text-cyan-400 group-hover:scale-110 transition-transform">person_add</i>
+                                    <span class="font-medium">Register</span>
+                                </div>
+                                <i class="material-icons transform transition-transform duration-300 dropdown-arrow">expand_more</i>
+                            </button>
+                            <div class="mobile-dropdown-content pl-12 mt-1 space-y-1">
+                                <a href="{{ url_for('student_register') }}" class="block px-4 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all duration-200">Student</a>
+                                <a href="{{ url_for('company_register') }}" class="block px-4 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all duration-200">Company</a>
+                                <a href="{{ url_for('college_register') }}" class="block px-4 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all duration-200">College</a>
+                                <a href="{{ url_for('university_register') }}" class="block px-4 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all duration-200">University</a>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="mt-8 pt-6 border-t border-white/10">
+                    <p class="text-gray-500 text-sm text-center">© 2025 ElevetR. All Rights Reserved.</p>
+                </div>
+            </div>
+        </div>
+
+        {% if session.logged_in and request.endpoint != 'landing' %}
+        <aside id="elevatrSidebar" class="elevatr-sidebar wow-seed">
+            <div class="sb-head">
+                <div class="sb-brand">
+                    <div class="sb-logo"></div>
+                    <div class="sb-title">ElevetR</div>
+                </div>
+                <button id="sbToggle" class="sb-toggle" type="button" aria-label="Toggle sidebar">
+                    <svg width="35" height="30" viewBox="0 0 24 24" fill="currentColor"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+                </button>
+            </div>
+
+            <div class="sb-scroll">
+                {% if session.role == 'student' %}
+                <section class="sb-group wow-seed">
+                    <div class="sb-group-head"><span class="dot"></span> Student</div>
+                    <div class="sb-list">
+                        <a class="sb-item" href="{{ url_for('student_profile') }}"><svg class="icon" viewBox="0 0 24 24"><path fill="currentColor" d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm0 2c-4.33 0-8 2.17-8 5v1h16v-1c0-2.83-3.67-5-8-5Z"/></svg><span class="label">Home</span></a>
+                        <button class="sb-item submenu-toggle" type="button" aria-expanded="false"><svg class="icon" viewBox="0 0 24 24"><path fill="currentColor" d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Z"/></svg><span class="label">Profile</span><svg class="chev" viewBox="0 0 24 24"><path fill="currentColor" d="M9 6l6 6-6 6"/></svg></button>
+                        <div class="submenu">
+                            <a href="{{ url_for('student_profile') }}">Overview</a>
+                            <a href="{{ url_for('student_edit_profile') }}">Edit Profile</a>
+                        </div>
+                        <a class="sb-item" href="{{ url_for('all_internship_opportunity') }}"><svg class="icon" viewBox="0 0 24 24"><path fill="currentColor" d="M20 6h-4V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2Zm-6-2v2h-4V4Zm6 15H4V8h16Z"/></svg><span class="label">Internships</span></a>
+                        <a class="sb-item" href="{{ url_for('my_applications') }}"><svg class="icon" viewBox="0 0 24 24"><path fill="currentColor" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8ZM6 20V4h7v5h5v11Z"/></svg><span class="label">Applications</span></a>
+                        <a class="sb-item" href="{{ url_for('resources') }}"><svg class="icon" viewBox="0 0 24 24"><path fill="currentColor" d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2Zm0 16H5V5h14Z"/></svg><span class="label">Resources</span></a>
+                    </div>
+                </section>
+                {% endif %}
+
+                {% if session.role == 'company' %}
+                <section class="sb-group wow-seed">
+                    <div class="sb-group-head"><span class="dot"></span> Company</div>
+                    <div class="sb-list">
+                        <a class="sb-item" href="{{ url_for('company_profile') }}"><svg class="icon" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2 2 7v10l10 5 10-5V7Z"/></svg><span class="label">Home</span></a>
+                        <button class="sb-item submenu-toggle" type="button" aria-expanded="false"><svg class="icon" viewBox="0 0 24 24"><path fill="currentColor" d="M20 6h-4V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2Z"/></svg><span class="label">Jobs</span><svg class="chev" viewBox="0 0 24 24"><path fill="currentColor" d="M9 6l6 6-6 6"/></svg></button>
+                        <div class="submenu">
+                            <a href="{{ url_for('post_job') }}">Post Job</a>
+                            <a href="{{ url_for('company_profile') }}">My Jobs</a>
+                        </div>
+                    </div>
+                </section>
+                {% endif %}
+
+                {% if session.role == 'college' %}
+                <section class="sb-group wow-seed">
+                    <div class="sb-group-head"><span class="dot"></span> College</div>
+                    <div class="sb-list">
+                        <a class="sb-item" href="{{ url_for('college_dashboard') }}"><svg class="icon" viewBox="0 0 24 24"><path fill="currentColor" d="M12 3 1 9l11 6 9-4.91V17h2V9Z"/></svg><span class="label">Dashboard</span></a>
+                    </div>
+                </section>
+                {% endif %}
+
+                {% if session.role == 'university' %}
+                <section class="sb-group wow-seed">
+                    <div class="sb-group-head"><span class="dot"></span> University</div>
+                    <div class="sb-list">
+                        <a class="sb-item" href="{{ url_for('university_dashboard') }}"><svg class="icon" viewBox="0 0 24 24"><path fill="currentColor" d="M12 3 1 9l4 2.18v6L12 21l7-3.82v-6l2-1.09V17h2V9Z"/></svg><span class="label">Dashboard</span></a>
+                        <a class="sb-item" href="{{ url_for('verify_companies') }}"><svg class="icon" viewBox="0 0 24 24"><path fill="currentColor" d="M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5Z"/></svg><span class="label">Verify</span></a>
+                    </div>
+                </section>
+                {% endif %}
+
+                <section class="sb-group wow-seed">
+                    <div class="sb-group-head"><span class="dot"></span> Tools</div>
+                    <div class="sb-list">
+                        <a class="sb-item" href="{{ url_for('tech_feed') }}"><svg class="icon" viewBox="0 0 24 24"><path fill="currentColor" d="M20 3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H4V5h16v14zM6 10h2v7H6zm4-3h2v10h-2zm4 6h2v4h-2z"/></svg><span class="label">Tech Feed</span></a>
+                        <a class="sb-item" href="{{ url_for('chatbot_page') }}"><svg class="icon" viewBox="0 0 24 24"><path fill="currentColor" d="M21 6h-2v9H6v2c0 .55.45 1 1 1h11l4 4V7c0-.55-.45-1-1-1zM17 9V3c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v14l4-4h10c.55 0 1-.45 1-1z"/></svg><span class="label">Chatbot</span></a>
+                        <a class="sb-item" href="{{ url_for('logout') }}"><svg class="icon" viewBox="0 0 24 24"><path fill="currentColor" d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5-5-5zM4 5h8V3H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8v-2H4V5z"/></svg><span class="label">Logout</span></a>
+                    </div>
+                </section>
+            </div>
+        </aside>
+
+        <button id="sbFab" class="sb-fab" aria-label="Open sidebar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+        </button>
+        <div id="sbBackdrop" class="sb-backdrop"></div>
+        {% endif %}
+
+        <div class="content-wrap">
+            <main class="mt-24 min-h-screen">
+                <div class="flash-messages container mx-auto px-6 my-4 max-w-5xl">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                        <div class="p-4 mb-4 text-sm rounded-lg {% if category == 'success' %}bg-green-900 text-green-300 border border-green-700{% else %}bg-red-900 text-red-300 border border-red-700{% endif %}">{{ message }}</div>
+                        {% endfor %}
+                    {% endif %}
+                    {% endwith %}
+                </div>
+                {% block content %}{% endblock %}
+            </main>
+
+            <a href="/chatbot" title="AI Chatbot" class="fixed bottom-5 right-5 z-50">
+                <lottie-player src="{{ url_for('static', filename='IMAGES/AI Robot.json') }}" background="transparent" speed="1" style="width:80px;height:100px;" loop autoplay></lottie-player>
+            </a>
+
+            <footer class="bg-gray-900 mt-16">
+                <div class="container mx-auto py-8 px-6 text-center">
+                    <h3 class="text-1xl md:text-3xl font-bold text-white mb-4" data-aos="fade-down">Your future is data-driven. Let AI guide the way.</h3>
+                    <div class="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center">
+                        <p class="text-gray-500 mb-4 md:mb-0">&copy; 2025 ElevetR. All Rights Reserved.</p>
+                        <div class="flex gap-6">
+                            <a href="#" class="text-gray-500 hover:text-white">About</a>
+                            <a href="#" class="text-gray-500 hover:text-white">Contact</a>
+                            <a href="#" class="text-gray-500 hover:text-white">Privacy</a>
+                            <a href="#" class="text-gray-500 hover:text-white">LinkedIn</a>
+                            <a href="#" class="text-gray-500 hover:text-white">GitHub</a>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://unpkg.com/simplebar@5.3.4/dist/simplebar.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/micromodal@0.4.6/dist/micromodal.min.js"></script>
+    <script src="https://unpkg.com/kursor@0.1.6/dist/kursor.js"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    
+    <script>
+      // Initialize AOS after it loads
+      if (typeof AOS !== 'undefined') {
+        AOS.init({ duration: 1000, once: true });
+      }
+    </script>
+
+    <script>
+      // Desktop Dropdown Toggle
+      document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.dropdown-trigger').forEach(function(btn) {
+          btn.addEventListener('click', function(e) { 
+            e.stopPropagation(); 
+            const dd = btn.nextElementSibling; 
+            dd.style.display = (dd.style.display === 'block' ? 'none' : 'block'); 
+          });
+        });
+        
+        document.addEventListener('click', function() { 
+          document.querySelectorAll('.dropdown-content').forEach(function(m) {
+            m.style.display = 'none';
+          }); 
+        });
+      });
+    </script>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        if (typeof VANTA !== 'undefined') {
+          VANTA.BIRDS({
+            el: "#vanta-bg",
+            mouseControls: true,
+            touchControls: true,
+            gyroControls: false,
+            minHeight: 200.00,
+            minWidth: 200.00,
+            scale: 1.00,
+            scaleMobile: 1.00,
+            backgroundColor: 0x07192f,
+            backgroundAlpha: 1,
+            color1: 0x0020ff,
+            color2: 0x00d1ff,
+            colorMode: "varianceGradient",
+            quantity: 5,
+            birdSize: 1,
+            wingSpan: 30,
+            speedLimit: 5,
+            separation: 20,
+            alignment: 20,
+            cohesion: 20
+          });
+        }
+      });
+    </script>
+
+    <script>
+      // Mobile Menu Toggle Script
+      (function() {
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const mobileOverlay = document.getElementById('mobileOverlay');
+        const hamburger = document.querySelector('.hamburger');
+
+        if (!mobileMenuBtn || !mobileMenu || !mobileOverlay) return;
+
+        function toggleMobileMenu() {
+          mobileMenu.classList.toggle('active');
+          mobileOverlay.classList.toggle('active');
+          hamburger.classList.toggle('active');
+          document.body.style.overflow = mobileMenu.classList.contains('active') ? 'hidden' : '';
+        }
+
+        function closeMobileMenu() {
+          mobileMenu.classList.remove('active');
+          mobileOverlay.classList.remove('active');
+          hamburger.classList.remove('active');
+          document.body.style.overflow = '';
+        }
+
+        mobileMenuBtn.addEventListener('click', toggleMobileMenu);
+        mobileOverlay.addEventListener('click', closeMobileMenu);
+
+        // Mobile Dropdown Toggle
+        document.querySelectorAll('.mobile-dropdown-trigger').forEach(trigger => {
+          trigger.addEventListener('click', function() {
+            const content = this.nextElementSibling;
+            const arrow = this.querySelector('.dropdown-arrow');
+            
+            document.querySelectorAll('.mobile-dropdown-content').forEach(dropdown => {
+              if (dropdown !== content) {
+                dropdown.classList.remove('active');
+                dropdown.previousElementSibling.querySelector('.dropdown-arrow').style.transform = '';
+              }
+            });
+
+            content.classList.toggle('active');
+            arrow.style.transform = content.classList.contains('active') ? 'rotate(180deg)' : '';
+          });
+        });
+
+        // Close menu when clicking on links
+        document.querySelectorAll('.mobile-menu a').forEach(link => {
+          link.addEventListener('click', closeMobileMenu);
+        });
+
+        // Close on escape key
+        document.addEventListener('keydown', function(e) {
+          if (e.key === 'Escape' && mobileMenu.classList.contains('active')) {
+            closeMobileMenu();
+          }
+        });
+      })();
+    </script>
+
+    {% if session.logged_in and request.endpoint != 'landing' %}
+    <script>
+      // Sidebar Script
+      (function(){
+        var hasSidebar = true;
+        if(!hasSidebar) return;
+
+        document.body.classList.add('has-sidebar');
+
+        var el = {
+          sidebar:  document.getElementById('elevatrSidebar'),
+          toggle:   document.getElementById('sbToggle'),
+          backdrop: document.getElementById('sbBackdrop'),
+          fab:      document.getElementById('sbFab')
+        };
+
+        var mqDesktop = window.matchMedia('(min-width:1025px)');
+        var KEY = 'elevatr.sidebar.collapsed';
+
+        function closeAllSubmenus(){
+          el.sidebar.querySelectorAll('.submenu').forEach(function(s) {
+            s.classList.remove('open');
+          });
+          el.sidebar.querySelectorAll('.submenu-toggle').forEach(function(b) {
+            b.setAttribute('aria-expanded','false');
+          });
+        }
+        function seedTitles(){
+          el.sidebar.querySelectorAll('.sb-item').forEach(function(a) {
+            if(!a.title && !a.classList.contains('submenu-toggle')){
+              var label = a.querySelector('.label');
+              var t = label ? label.textContent.trim() : '';
+              if(t) a.title = t;
+            }
+          });
+        }
+        function markActive(){
+          var current = location.pathname.replace(/\/+$/,'');
+          el.sidebar.querySelectorAll('.sb-item[href]').forEach(function(a) {
+            var href = (a.getAttribute('href') || '').replace(/\/+$/,'');
+            if(href && href === current) a.classList.add('is-active');
+          });
+        }
+
+        function setCollapsed(c){
+          var desk = mqDesktop.matches;
+          el.sidebar.classList.toggle('collapsed', c && desk);
+          document.body.classList.toggle('is-collapsed', c && desk);
+          localStorage.setItem(KEY, c ? '1' : '0');
+          if(c && desk) closeAllSubmenus();
+          seedTitles();
+        }
+        function openMobile(){ 
+          el.sidebar.classList.add('open'); 
+          el.backdrop.classList.add('show'); 
+          if(el.fab) el.fab.classList.remove('show'); 
+        }
+        function closeMobile(){ 
+          el.sidebar.classList.remove('open'); 
+          el.backdrop.classList.remove('show'); 
+          if(!mqDesktop.matches && el.fab) el.fab.classList.add('show'); 
+        }
+
+        var saved = localStorage.getItem(KEY) === '1';
+        if(mqDesktop.matches){ 
+          setCollapsed(saved); 
+          if(el.fab) el.fab.classList.remove('show'); 
+        } else { 
+          if(el.fab) el.fab.classList.add('show'); 
+        }
+        markActive(); 
+        seedTitles();
+
+        mqDesktop.addEventListener('change', function() { 
+          closeMobile(); 
+          setCollapsed(localStorage.getItem(KEY) === '1'); 
+        });
+
+        function toggleAction(){
+          if(mqDesktop.matches){ 
+            setCollapsed(!el.sidebar.classList.contains('collapsed')); 
+          } else { 
+            if(el.sidebar.classList.contains('open')) {
+              closeMobile();
+            } else {
+              openMobile();
+            }
+          }
+        }
+
+        if(el.toggle) el.toggle.addEventListener('click', toggleAction);
+        if(el.backdrop) el.backdrop.addEventListener('click', closeMobile);
+        if(el.fab) el.fab.addEventListener('click', openMobile);
+
+        document.addEventListener('keydown', function(e) { 
+          if(e.key === 'Escape' && el.sidebar.classList.contains('open')) {
+            closeMobile(); 
+          }
+        });
+
+        el.sidebar.querySelectorAll('.submenu-toggle').forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            var panel = btn.nextElementSibling;
+            if(!panel || !panel.classList.contains('submenu')) return;
+            var open = panel.classList.toggle('open');
+            btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+            Array.from(btn.parentElement.querySelectorAll('.submenu'))
+              .filter(function(elm) { return elm !== panel; })
+              .forEach(function(elm) { 
+                elm.classList.remove('open'); 
+                if(elm.previousElementSibling) {
+                  elm.previousElementSibling.setAttribute('aria-expanded','false'); 
+                }
+              });
+          });
+        });
+
+        function wow(){
+          el.sidebar.querySelectorAll('.sb-item, .submenu a, .sb-group').forEach(function(e) { 
+            if(!e.classList.contains('wow-in')) e.classList.add('wow-seed'); 
+          });
+          var seeds = el.sidebar.querySelectorAll('.wow-seed:not(.wow-in)');
+          var io = new IntersectionObserver(function(entries) {
+            entries.forEach(function(en, i) { 
+              if(en.isIntersecting) { 
+                setTimeout(function() { 
+                  en.target.classList.add('wow-in'); 
+                }, 24 * i); 
+                io.unobserve(en.target); 
+              } 
+            });
+          }, { root: el.sidebar, threshold: 0.05 });
+          seeds.forEach(function(s) { io.observe(s); });
+          el.sidebar.classList.add('wow-in');
+        }
+        requestAnimationFrame(wow);
+      })();
+    </script>
+    {% endif %}
+
+    {% block scripts_extra %}{% endblock %}
+    
+    <script src="{{ url_for('static', filename='js/notification.js') }}"></script>
+</body>
+</html>

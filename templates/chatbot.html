@@ -1,0 +1,321 @@
+{% extends 'base.html' %}
+
+{% block title %}ElevatR Chatbot 🤖{% endblock %}
+
+{% block head_extra %}
+  <style>
+    /* The base template already provides a background, so we remove the custom one */
+    body {
+        background: linear-gradient(to right, #5b6f90, #091230) !important;
+    }
+
+    #vanta-bg {
+        display: none;
+    }
+    #chat-box {
+      scrollbar-width: thin;
+      scrollbar-color: #94a3b8 transparent;
+    }
+    .chat-bubble {
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from {opacity: 0; transform: translateY(6px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+    /* Simple toggle switch styling */
+    #voice-toggle {
+        cursor: pointer;
+        user-select: none;
+        font-size: 1.25rem; /* 20px */
+        padding-left: 0.75rem; /* 12px */
+        padding-right: 0.75rem; /* 12px */
+    }
+    /* Container for the dropdowns */
+    .chat-options {
+      color: black;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem; /* 12px */
+        margin-top: 0.75rem; /* 12px */
+    }
+    .chat-options label {
+        display: block;
+        text-xs opacity-90;
+        margin-bottom: 0.25rem; /* 4px */
+    }
+    .chat-options select {
+        width: 100%;
+        text-xs text-black-500 rounded p-1 border border-indigo-300 bg-white/80 focus:outline-none focus:ring-1 focus:ring-white;
+    }
+
+  </style>
+{% endblock %}
+
+{% block content %}
+  <div class="flex justify-center items-center py-12">
+
+    <div class="w-full max-w-md bg-white/90 backdrop-blur-md rounded-3xl shadow-2xl border border-blue-100 overflow-hidden">
+
+      <div class="px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-cyan-500 rounded-full flex items-center justify-center transform transition-all duration-300 shadow-lg shadow-indigo-500/50">
+            <span class="text-white font-black text-lg">E</span>
+          </div>
+          <div>
+            <h1 class="font-semibold text-lg">ElevatR Chatbot 🤖</h1>
+            <p class="text-xs opacity-90">Your Assistant offered by Team Think-Bolts</p>
+          </div>
+        </div>
+        
+        <div class="chat-options">
+          <div id="speech-lang-container" style="display: none;">
+            <label for="speech-lang-select">Speech Language:</label>
+            <select id="speech-lang-select">
+              <option value="en-US">English</option>
+              <option value="hi-IN">Hindi (हिन्दी)</option>
+              <option value="or-IN">Odia (ଓଡ଼ିଆ)</option>
+            </select>
+          </div>
+
+          <div id="voice-options-container" style="display: none;">
+            <label for="voice-select">Voice Tone:</label>
+            <select id="voice-select">
+              </select>
+          </div>
+        </div>
+
+      </div>
+
+      <div id="chat-box" class="p-4 h-[28rem] overflow-y-auto bg-gray-50 space-y-2">
+      
+        <div class="text-center text-gray-500 mt-24 animate-pulse select-none">
+          👋 Hi there! You can ask me anything you need — from job help to placement tips 💼
+        </div>
+      </div>
+
+      <div class="p-3 flex border-t border-gray-200 bg-white">
+        <input id="msg" 
+               class="flex-grow text-gray-700 border border-gray-300 rounded-l-xl p-2 focus:outline-none focus:ring-1 focus:ring-blue-400" 
+               placeholder="Hi user 👋 you can ask me anything you need..." 
+               autocomplete="off">
+        <button id="mic-btn" 
+                class="bg-gray-100 text-gray-700 px-4 border-t border-b border-gray-300 hover:bg-gray-200 transition-all text-xl focus:outline-none">
+          🎤
+        </button>
+        <button id="send" 
+                class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 rounded-r-xl hover:opacity-90 transition-all">
+          Send
+        </button>
+        <button id="voice-toggle"
+                class="bg-gray-100 text-gray-700 px-3 border border-gray-300 rounded-r-xl hover:bg-gray-200 transition-all text-xl focus:outline-none -ml-px rounded-l-none">
+          🔈
+        </button>
+      </div>
+    </div>
+
+  </div>
+{% endblock %}
+
+{% block scripts_extra %}
+  <script>
+    const chatBox = document.getElementById("chat-box");
+    const msgInput = document.getElementById("msg");
+    const sendBtn = document.getElementById("send");
+    const micBtn = document.getElementById("mic-btn");
+    
+    
+    const voiceToggleBtn = document.getElementById("voice-toggle");
+    const voiceOptionsContainer = document.getElementById("voice-options-container");
+    const voiceSelect = document.getElementById("voice-select");
+    
+    
+    const speechLangContainer = document.getElementById("speech-lang-container");
+    const speechLangSelect = document.getElementById("speech-lang-select");
+
+    let isVoiceEnabled = true; 
+    let voices = [];
+    let selectedVoice = null; 
+
+    
+    function populateVoiceList() {
+      if (typeof speechSynthesis === 'undefined') {
+        return;
+      }
+      voices = speechSynthesis.getVoices();
+      
+      if (voices.length > 0) {
+        voiceOptionsContainer.style.display = 'block'; 
+        voiceSelect.innerHTML = ''; 
+        
+        voices.forEach((voice, i) => {
+          const option = document.createElement('option');
+          option.textContent = `${voice.name} (${voice.lang})`;
+          option.setAttribute('data-lang', voice.lang);
+          option.setAttribute('data-name', voice.name);
+          voiceSelect.appendChild(option);
+        });
+        
+        // Auto-select a default English voice as the initial default
+        let defaultVoice = voices.find(voice => voice.lang.includes('en-US') && voice.name.includes('Google')) || voices.find(voice => voice.lang.includes('en'));
+        if (!defaultVoice) { defaultVoice = voices[0]; }
+
+        // Set the default voice
+        selectedVoice = defaultVoice;
+        voiceSelect.value = `${selectedVoice.name} (${selectedVoice.lang})`;
+      }
+    }
+
+    // Load voices
+    populateVoiceList();
+    if (typeof speechSynthesis !== 'undefined' && speechSynthesis.onvoiceschanged !== undefined) {
+      speechSynthesis.onvoiceschanged = populateVoiceList;
+    }
+
+    // Event listener for voice selection change
+    // This answers your Request 2: The selected voice is saved and will be used until changed.
+    voiceSelect.addEventListener('change', () => {
+      selectedVoice = voices.find(voice => voice.name === voiceSelect.selectedOptions[0].getAttribute('data-name'));
+    });
+
+    // Event listener for voice toggle
+    voiceToggleBtn.addEventListener('click', () => {
+      isVoiceEnabled = !isVoiceEnabled;
+      if (isVoiceEnabled) {
+        voiceToggleBtn.textContent = '🔈';
+      } else {
+        voiceToggleBtn.textContent = '🔇';
+        window.speechSynthesis.cancel(); // Stop any speech if user mutes
+      }
+    });
+
+    // --- Voice Input (Speech Recognition) ---
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recognition;
+
+    if (SpeechRecognition) {
+      recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      // We no longer set a default lang here, we set it on-click
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+      
+      speechLangContainer.style.display = 'block'; // Show the language selector
+
+      micBtn.addEventListener('click', () => {
+        try {
+          // --- NEW: Set language based on dropdown ---
+          recognition.lang = speechLangSelect.value;
+          
+          recognition.start();
+          micBtn.innerHTML = '...'; // Indicate listening
+          micBtn.disabled = true;
+        } catch(e) {
+          console.error("Speech recognition error:", e.message);
+          micBtn.innerHTML = '🎤';
+          micBtn.disabled = false;
+        }
+      });
+
+      recognition.onresult = (event) => {
+        const speechResult = event.results[0][0].transcript;
+        msgInput.value = speechResult;
+        sendMessage(); // Automatically send after recognition
+      };
+
+      recognition.onspeechend = () => {
+        recognition.stop();
+      };
+
+      recognition.onend = () => {
+        micBtn.innerHTML = '🎤'; // Reset mic icon
+        micBtn.disabled = false;
+      };
+
+      recognition.onerror = (event) => {
+        console.error("Speech recognition error:", event.error);
+        micBtn.innerHTML = '🎤'; // Reset mic icon
+        micBtn.disabled = false;
+      };
+
+    } else {
+      console.warn("Speech Recognition not supported in this browser.");
+      micBtn.style.display = 'none'; 
+    }
+
+    // --- Send Message Function (with Voice Output) ---
+    async function sendMessage() {
+      const msg = msgInput.value.trim();
+      if (!msg) return;
+
+      // Remove the placeholder if it exists
+      const placeholder = chatBox.querySelector('.text-center');
+      if (placeholder) placeholder.remove();
+
+      // Display user message
+      const userDiv = document.createElement("div");
+      userDiv.className = "text-right";
+      userDiv.innerHTML = `<div class='inline-block bg-blue-600 text-white px-3 py-2 rounded-xl chat-bubble'>${msg}</div>`;
+      chatBox.appendChild(userDiv);
+      chatBox.scrollTop = chatBox.scrollHeight;
+      msgInput.value = "";
+
+      // Send to API and get bot response
+      try {
+        const res = await fetch("/chatbot_api", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: msg })
+        });
+        const data = await res.json();
+        
+        // --- UPDATED Voice Output (Speech Synthesis) ---
+        if (isVoiceEnabled && 'speechSynthesis' in window) {
+          // Strip markdown for a cleaner speech reply
+          const speechReply = data.reply.replace(/\*\*/g, '').replace(/\* /g, ''); 
+          
+          window.speechSynthesis.cancel(); // Cancel any ongoing speech
+          const utterance = new SpeechSynthesisUtterance(speechReply);
+          
+          // --- This answers Request 2 ---
+          // Use the persistent voice the user selected
+          if (selectedVoice) {
+            utterance.voice = selectedVoice;
+          }
+          // Note: If the bot *did* reply in Hindi, we would ideally find a
+          // Hindi voice here. But since the bot replies in English,
+          // we use the user's selected default voice.
+          
+          window.speechSynthesis.speak(utterance);
+        }
+        // --- End of Voice Output ---
+
+        const botDiv = document.createElement("div");
+        botDiv.className = "text-left";
+        // Simple markdown-to-HTML for bold and lists
+        let botReply = data.reply.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        botReply = botReply.replace(/\* (.*?)(?=\n\* |\n\n|$)/g, '<li>$1</li>');
+        botReply = botReply.replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>');
+        
+        botDiv.innerHTML = `<div class='inline-block bg-gray-200 text-gray-800 px-3 py-2 rounded-xl chat-bubble'>${botReply}</div>`;
+        chatBox.appendChild(botDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+      } catch (error) {
+        console.error("Error connecting to chatbot:", error);
+        const errDiv = document.createElement("div");
+        errDiv.className = "text-left text-red-600";
+        errDiv.textContent = "⚠️ Error connecting to chatbot.";
+        chatBox.appendChild(errDiv);
+      }
+    }
+
+    sendBtn.addEventListener("click", sendMessage);
+    msgInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault(); // Prevent form submission
+        sendMessage();
+      }
+    });
+  </script>
+{% endblock %}

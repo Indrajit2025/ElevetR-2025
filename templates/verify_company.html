@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% block title %}Verify Companies{% endblock %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<style>
+    /* Basic table styles - you can enhance these */
+    .glass-card {
+        background: rgba(26, 27, 46, 0.7); backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 1.5rem; border-radius: 1rem;
+    }
+    .table-dark-glass th { background-color: rgba(17, 24, 39, 0.8); padding: 0.75rem 1rem; text-align: left; font-size: 0.75rem; text-transform: uppercase; color: #9ca3af;}
+    .table-dark-glass td { background-color: rgba(31, 41, 55, 0.7); border-color: rgba(55, 65, 81, 0.5); padding: 0.75rem 1rem; border-top: 1px solid rgba(55, 65, 81, 0.5);}
+    .table-dark-glass tr:hover td { background-color: rgba(55, 65, 81, 0.8); }
+    .btn-approve { background-color: #10b981; color: white; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; border: none; cursor: pointer;}
+    .btn-approve:hover { background-color: #059669; }
+    .btn-deny { background-color: #ef4444; color: white; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; border: none; cursor: pointer;}
+    .btn-deny:hover { background-color: #dc2626; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 max-w-7xl">
+    <h2 class="text-3xl font-bold mb-8 text-center bg-gradient-to-r from-violet-400 to-fuchsia-400 bg-clip-text text-transparent">
+        Pending Company Verifications <i class="bi bi-patch-check"></i>
+    </h2>
+
+     {% with messages = get_flashed_messages(with_categories=true) %}
+         {% if messages %}
+             <div class="mb-4 max-w-4xl mx-auto">
+             {% for category, message in messages %}
+                 <div class="p-3 text-sm rounded-lg {% if category == 'success' %} bg-green-900 text-green-300 border border-green-700 {% elif category == 'warning' %} bg-yellow-900 text-yellow-300 border border-yellow-700 {% else %} bg-red-900 text-red-300 border border-red-700 {% endif %}" role="alert">
+                     {{ message }}
+                 </div>
+             {% endfor %}
+             </div>
+         {% endif %}
+     {% endwith %}
+
+    {% if companies %}
+        <div class="glass-card rounded-2xl overflow-x-auto">
+            <table class="w-full text-sm text-left text-gray-300 table-dark-glass">
+                <thead class="text-xs uppercase">
+                    <tr>
+                        <th scope="col">Company Name (MCA)</th>
+                        <th scope="col">CIN</th>
+                        <th scope="col">GSTIN</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">Mobile</th>
+                        <th scope="col">LinkedIn</th>
+                        <th scope="col" class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for company in companies %}
+                    <tr class="border-b border-gray-700 align-top"> {# align-top helps if descriptions wrap #}
+                        <td class="font-medium whitespace-nowrap">{{ company.mca_registered_name or company.company_name }}</td>
+                        <td>{{ company.cin_number }}</td>
+                        <td>{{ company.gstin_number }}</td>
+                        <td>{{ company.email }}</td>
+                        <td>{{ company.mobile_number }}</td>
+                        <td>
+                            {% if company.linkedin_profile %}
+                            <a href="{{ company.linkedin_profile }}" target="_blank" class="text-indigo-400 hover:underline inline-flex items-center gap-1">
+                                <i class="bi bi-linkedin"></i> View
+                            </a>
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td class="text-center space-x-2 whitespace-nowrap">
+                            {# Approve Form #}
+                            <form action="{{ url_for('approve_deny_company', company_id=company.id) }}" method="POST" class="inline">
+                                <input type="hidden" name="action" value="approve">
+                                <button type="submit" class="btn-approve">Approve</button>
+                            </form>
+                            {# Deny Form #}
+                            <form action="{{ url_for('approve_deny_company', company_id=company.id) }}" method="POST" class="inline">
+                                <input type="hidden" name="action" value="reject">
+                                <button type="submit" class="btn-deny">Deny</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="text-center text-gray-400 mt-10 text-lg">🎉 No companies are currently pending verification.</p>
+    {% endif %}
+
+     <div class="mt-8 text-center">
+        <a href="{{ url_for('university_dashboard') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-gray-700/50 border border-gray-600 rounded-lg text-sm text-gray-300 hover:bg-gray-600/50 transition-colors">
+            <i class="bi bi-arrow-left"></i> Back to University Dashboard
+         </a>
+     </div>
+
+</div>
+{% endblock %}
