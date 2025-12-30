@@ -6,10 +6,10 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/AI-Google_Gemini-blue?style=for-the-badge&logo=google-gemini" />
   <img src="https://img.shields.io/badge/Backend-Flask-black?style=for-the-badge&logo=flask" />
   <img src="https://img.shields.io/badge/Database-MySQL-4479A1?style=for-the-badge&logo=mysql" />
   <img src="https://img.shields.io/badge/ML-Scikit--learn-F7931E?style=for-the-badge&logo=scikit-learn" />
+  <img src="https://img.shields.io/badge/API-Google_Gemini-blue?style=for-the-badge&logo=google-gemini" />
 </p>
 
 ---
